@@ -1,0 +1,197 @@
+# 용어 및 식별자 고정표
+
+이 문서는 프로젝트 내 모든 식별자와 용어의 **단일 정의처**다.
+코드 변수명, `metrics.json` 필드명, 문서 참조는 전부 이 표를 따른다.
+여기에 없는 식별자를 새로 만들지 않는다. 필요하면 이 문서를 먼저 갱신한다.
+
+> **2026-09-13 개정.** 결정 ID 체계를 `ADR-NNN`에서 `D-NNN`으로 통일하고,
+> 무효화된 로드맵을 정의처에서 제거하고, 폐기된 3분할·보정 전제 용어를 정리했다.
+> 개정 사유는 `docs/doc_consistency_audit_2026-09-13.md`에 있다.
+
+---
+
+## A. 식별자 체계
+
+이 프로젝트에는 두 개의 독립된 번호 체계가 있다. 서로 다른 것을 가리키므로 혼용하지 않는다.
+
+| 체계 | 형식 | 가리키는 것 | 정의된 곳 |
+|---|---|---|---|
+| 결정 ID | `D-NNN` | 확정된 설계 결정 1건 | `docs/CURRENT_DECISIONS.md` |
+| 실험 ID | `EXP-NNN` | 저장소에서 실행되는 실험 1건 | `experiments/EXP-XXX-*.md` |
+
+### A-1. 폐기된 식별자 체계
+
+아래 세 체계는 **더 이상 쓰지 않는다.** 과거 문서에 등장하면 폐기된 설계를 가리키는 것이다.
+
+| 폐기된 체계 | 형식 | 폐기 사유 |
+|---|---|---|
+| 결정 ID (구) | `ADR-NNN` | `docs/decisions/`에 실물이 한 건도 작성되지 않은 채 8곳에서 참조되었다. `D-NNN`으로 통일 |
+| 단계 번호 | `N단계` (1~10) | 로드맵 10단계 체계가 `CURRENT_DECISIONS.md`로 대체됨 |
+| 정책 번호 | `1-1` ~ `1-12` | 위와 동일 |
+| 절 기호 | `A-3`, `C-8`, `D-7` 등 | 로드맵 문서 내부 참조. 로드맵이 `_superseded/`로 이동 |
+
+**`ADR-001`은 존재한 적이 없다.** 구 `experiments/QUEUE.md`·`EXP-003`·`EXP-005`가
+"`ADR-001`이 EXP-003을 참조하므로 이 ID의 의미를 바꾸지 말 것"을 실험 ID 고정의 근거로
+삼았으나, 그 근거 문서는 작성되지 않았다. 해당 파일들은 `_superseded/`로 이동했으며,
+재작성 시 `D-NNN`을 참조해야 한다.
+
+### A-2. 참조 규칙
+
+1. 문서에서 다른 문서의 식별자를 참조할 때는 **참조 대상이 실제로 정의되어 있는지 먼저 확인한다.**
+   정의되지 않은 식별자를 참조 형태로 쓰면 그 순간 유령 참조가 된다.
+   (`ADR-001` 8곳이 정확히 이 실패 사례다.)
+2. 새 식별자를 만들 때는 이 문서의 A절 표에 먼저 등록하고 사용한다.
+3. 재실행은 새 ID로 만든다: `EXP-003-r2`. 기존 ID의 결과를 덮어쓰지 않는다.
+4. 기존 식별자의 **의미를 바꾸지 않는다.** 의미가 달라지면 번호를 새로 딴다.
+
+### A-3. 같은 사실을 두 곳에 쓰지 않는다
+
+| 사실 | 유일한 정본 |
+|---|---|
+| 결정과 근거 | `docs/CURRENT_DECISIONS.md` |
+| 학습 입력 컬럼 목록 | `configs/features_whitelist.json` |
+| 레이블 전수·Attempted 코드북 | `docs/dataset_audit_2026-09-11.md` |
+| 원본 91컬럼 통계 | `docs/feature_inventory_2026-09-12.md` |
+| 용어·식별자 | 이 문서 |
+
+---
+
+## B. 연구 용어 ↔ 코드 식별자
+
+| 국문 | 코드 식별자 / 영문 | 정의 |
+|---|---|---|
+| 판정 유보 | `abstention` | 1차 모델이 판정을 내리지 않고 심층 검증으로 넘기는 동작 |
+| 유보 구간 | `abstention_band` | 유보가 발생하는 예측 확률 구간. `[lower, upper]`. 사전 고정하지 않고 test 확률 전량을 오프라인 스윕해 구한다 |
+| 유보 비율 | `abstention_rate` | 전체 플로우 대비 유보된 플로우의 비율 |
+| 목표 유보 비율 | `target_abstention_rate` | D-006에서 사전 지정한 유보 처리량 상한. 값: 0.01 / 0.02 / 0.05 / 0.10 |
+| 실제 유보 비율 | `actual_abstention_rate` | 완전한 confidence tie 그룹만 유보하여 실제로 달성한 비율. `target_abstention_rate`를 초과하지 않는다 |
+| Confidence 유보 임계값 | `confidence_threshold` | `confidence <= confidence_threshold`인 행을 유보하는 경계. 해당 budget에 비어 있으면 `null` |
+| Budget 미사용분 | `budget_shortfall` | `target_abstention_rate - actual_abstention_rate` |
+| 에스컬레이션 비율 | `escalation_ratio` | 전체 플로우 대비 심층 검증으로 넘어간 비율 |
+| 검증 예산 | `verification_budget` | 심층 검증에 할당 가능한 처리량(초당 플로우). 유보 구간 폭을 결정하는 상한 제약 |
+| 위험-커버리지 곡선 | `risk_coverage_curve` | 커버리지(비유보 비율) 대비 오류율 곡선 |
+| 위험-커버리지 곡선 하 면적 | `aurc` | 위 곡선의 적분값. 낮을수록 좋음. **이 서브실험의 주 지표.** 확정된 `confidence`의 순위와 동률을 보존하는 엄격한 단조변환에 불변이다 |
+| 커버리지 | `coverage` | 전체 평가 행 중 모델이 유보하지 않고 직접 판정한 비율 |
+| 선택적 위험 | `selective_risk` | 현재 coverage에서 유보하지 않은 행의 `is_error` 평균 |
+| 전체 커버리지 위험 | `full_coverage_risk` | 유보가 없을 때 전체 평가 행의 `is_error` 평균 |
+| 무작위 유보 AURC | `random_aurc` | confidence가 오류와 무관한 무작위 순위의 기대 AURC. D-006에서는 `full_coverage_risk`와 같음 |
+| Oracle AURC | `oracle_aurc` | 현재 오류 개수를 고정하고 정답을 먼저 수용하도록 완벽히 순위화했을 때 가능한 경험적 AURC 하한 |
+| AURC 상대 개선율 | `relative_aurc_improvement` | `(random_aurc - aurc) / random_aurc`. 0은 무작위 순위와 동일, 양수는 개선 |
+| 무작위 기준 정규화 AURC | `aurc_random_ratio` | `aurc / random_aurc`. 낮을수록 오류 순위가 좋다. `random_aurc == 0`이면 계산하지 않는다 |
+| 기준 정규화 AURC | `reference_aurc_random_ratio` | EXP-008이 비교 기준으로 읽은 EXP-007 `group_seed42`의 `aurc_random_ratio` 원값 |
+| 정규화 AURC 허용 상한 | `maximum_aurc_random_ratio` | EXP-008 seed별 순위 판정에 사용하는 `reference_aurc_random_ratio`의 사전 고정 배수 상한 |
+| 오류 농축도 | `error_enrichment` | `error_capture_rate / actual_abstention_rate`. 1은 무작위 유보의 기대 수준 |
+| 공격 확률 | `p_attack` | LightGBM이 출력한 공격 클래스 확률. 반올림·보정하지 않은 값을 저장한다 |
+| 이진 예측 라벨 | `predicted_label` | `p_attack >= 0.5`이면 1(공격), 아니면 0(정상) |
+| 예측 신뢰도 | `confidence` | `max(p_attack, 1 - p_attack)`. 범위 `[0.5, 1]`; 낮을수록 먼저 유보한다 |
+| 예측 오류 여부 | `is_error` | `predicted_label != binary_label`이면 1, 아니면 0 |
+| 이진 정답 라벨 | `binary_label` | `BENIGN=0`, D-001·D-002를 제외한 명확한 공격 14종=1 |
+| Test 표본 수 | `n_test` | 해당 평가 집합 또는 원래 `Label`의 외부 test 행 수 |
+| 수용·유보 행 수 | `n_accepted` / `n_abstained` | 해당 budget에서 직접 판정하거나 유보한 행 수 |
+| 전체·수용·유보 오류 수 | `total_errors` / `accepted_errors` / `abstained_errors` | 평가 집합 전체, 수용 행, 유보 행에 포함된 `is_error == 1` 행 수 |
+| 목표 유보 행 수 | `target_abstention_rows` | `floor(target_abstention_rate * n_test)`. 고정 경계의 처리량 차이를 행 수로 나타낼 때 기준으로 사용 |
+| 유보 행 차이 | `abstention_row_delta` | `n_abstained - target_abstention_rows`. 양수는 목표 초과, 음수는 미사용 |
+| 유보율 차이 | `abstention_rate_delta` | `actual_abstention_rate - target_abstention_rate`. 양수는 목표 초과, 음수는 미사용 |
+| 허용 유보율 하한·상한 | `allowed_abstention_rate_lower` / `allowed_abstention_rate_upper` | EXP-008 고정 경계 처리량 판정에 사전 고정한 실제 유보율 범위 |
+| 고정 경계 출처 | `confidence_threshold_source` | 고정 `confidence_threshold`를 읽은 참조 실험·분석·budget·산출물의 식별 정보 |
+| 다음 동률 포함 유보율 | `next_tie_inclusive_abstention_rate` | 현재 budget에서 제외된 다음 완전 confidence tie 그룹까지 포함할 때의 유보율. 다음 그룹이 없으면 `null` |
+| ROC 곡선 하 면적 | `auroc` | 외부 test 전체의 `p_attack`으로 한 번 계산하는 ROC-AUC |
+| 평균 정밀도 | `average_precision` | 외부 test 전체에서 `average_precision_score` 방식으로 계산하는 PR 요약. 사다리꼴 PR-AUC가 아님 |
+| 이진 로그손실 | `binary_logloss` | 외부 test 전체의 binary log loss. 학습 목적함수와 같은 정의의 진단 지표 |
+| 오류 포착률 | `error_capture_rate` | 전체 커버리지 오류 중 유보된 행에 포함된 오류의 비율 |
+| 선택적 FPR/FNR | `selective_fpr` / `selective_fnr` | 해당 budget에서 수용된 정상/공격 행만 분모로 계산한 FP/FN 비율 |
+| 잔여 FPR/FNR | `residual_fpr` / `residual_fnr` | 해당 budget의 수용 FP/FN을 유보 전 전체 정상/공격 행 수로 나눈 비율 |
+| 클래스별 커버리지 | `benign_coverage` / `attack_coverage` | 유보 전 해당 이진 클래스 행 중 수용된 비율 |
+| 관찰군 | `observation_group` | 학습·평가 지표 산출에서 제외하고 별도 관찰하는 행 집합. 값: `none` / `attempted` / `invalid_class` |
+| Attempted 관찰군 | `attempted` | `Label`이 `- Attempted`로 끝나는 11종 11,979행 (D-001) |
+| 무효 클래스 관찰군 | `invalid_class` | `Label == "DoS Hulk"` 158,468행 (D-002) |
+| 분포 외 스코어 | `ood_score` | 정상 트래픽 기준 이상 정도. 보조 게이트 후보. 미착수 |
+| 예측 기여 특징 | `feature_attribution` | SHAP 등이 산출한 예측 기여도. **인과적 이유가 아님** |
+| 하이퍼파라미터 후보 ID | `candidate_id` | D-006 제한 격자의 LightGBM 후보 식별자. 값: `C01`~`C08` |
+| 공통 test 행 수 | `common_test_rows` | 두 seed의 test에 모두 포함된 `(day, id)` 행 수 |
+| test 행 Jaccard | `row_jaccard` | 두 seed의 고유 `(day, id)` test 행 집합의 교집합 크기를 합집합 크기로 나눈 값 |
+| 공통 test 완전일치 그룹 수 | `common_test_feature_groups` | 두 seed의 test에 모두 포함된 `feature_group_id` 수 |
+| 완전일치 그룹 Jaccard | `feature_group_jaccard` | 두 seed의 test `feature_group_id` 집합의 교집합 크기를 합집합 크기로 나눈 값 |
+| 공통 오류 행 수 | `common_error_rows` | 두 seed 모두의 test에 있으면서 두 모델 모두 `is_error == 1`인 같은 `(day, id)` 행 수 |
+| 검색된 근거 문서 | `retrieved_evidence_documents` | RAG가 회수한 CTI/ATT&CK/CVE 문서 (2·3차 계층) |
+| 문서 지지율 | `groundedness` | 제시된 근거가 검색된 문서에 의해 지지되는 비율 (2·3차 계층) |
+
+### B-1. 이 서브실험의 범위 밖인 용어
+
+아래는 **정의는 유지하되 이번 서브실험에서 산출하지 않는다.** D-004가 보정을 수행하지 않기로 했다.
+
+| 국문 | 코드 식별자 | 상태 |
+|---|---|---|
+| 확률 보정 | `calibration` | **범위 밖.** 이 실험에서는 항상 `none` |
+| 보정 세트 | `calib` | **범위 밖.** D-004는 train/test 2분할이며 calib split이 없다 |
+| 기대 보정 오차 | `ece` | **범위 밖** |
+| 적응형 보정 오차 | `adaptive_ece` | **범위 밖** |
+| 브라이어 점수 | `brier_score` | **범위 밖** |
+| 미학습 공격군 일반화 평가 | `LOAO` | **범위 밖.** D-004는 LOAO를 쓰지 않는다 |
+| 배제 공격군 | `held_out_attack` | **범위 밖.** 위와 동일 |
+
+본 연구(3단 구조) 단계에서 다시 쓰게 되면 그때 이 절에서 B절로 옮긴다.
+
+---
+
+## C. 분할 관련 필드명 (D-004 기준)
+
+| 필드 | 정의 |
+|---|---|
+| `split` | 값: `train` / `test`. **`calib`는 없다** (D-004) |
+| `observation_group` | B절 참조. `none` / `attempted` / `invalid_class` |
+| `feature_group_id` | whitelist 59개 값이 완전히 같은 행의 그룹 식별자. 정본 요일 순서와 각 CSV의 `id` 순서로 처음 등장한 그룹부터 `fg_`와 0부터 시작하는 고정 폭 10자리 번호를 부여한다. 폐기된 `group_id`를 재사용하지 않는다 |
+
+### C-1. 폐기된 필드명
+
+아래는 폐기된 파이프라인(`_superseded/src/cicids_prep/`)의 산출물이다. **새 코드에서 쓰지 않는다.**
+
+`row_uid`, `group_id`, `original_split`, `below_min_group_count`, `label_conflict_flag`,
+`invalid_negative_duration_flag`, `reserved_for_early_features.parquet`,
+`dropped_constant_duplicate_columns.json`, `clipping_values.json`,
+`split_summary_report.csv`, `validation_log.json`, `duplicate_flow_report.{json,csv}`
+
+**예외:** `dataset_manifest.json`은 유효하다. 재생성 대상이며 필드는
+`file_sha256`, `row_counts`, `manifest_created_at`, `source_zip_sha256`이다
+(`original_download_date` 필드는 만들지 않는다 — 복원 불가능한 정보를 임의로 채우지 않는다).
+
+---
+
+## D. 폐기된 표현
+
+아래 표현은 코드·문서·논문 어디에도 쓰지 않는다.
+
+- **3분기 판정** (정상/의심/공격) — `abstention` 프레이밍으로 대체 확정
+- **재라벨링** — 검증 결과의 라벨 환류는 기각됨. 환류 범위는 임계값 조정까지
+- **피처 기여도**, **판단 근거 특징** — `예측 기여 특징`(feature attribution)으로 통일
+- **밀리초 단위**, 측정 전 지연 수치 — 실측 전 수치 주장 금지
+- **정확도(accuracy)를 주 지표로** — 클래스 불균형이 심해 무의미
+- **`ADR-NNN`** — `D-NNN`으로 대체
+- **"CNS2022 공식 split"** — CNS2022는 고정 split을 규정하지 않았다 (D-004 §3-2)
+
+---
+
+## E. 갱신 규칙
+
+1. 새 식별자 도입, 필드명 변경, 용어 확정·폐기가 발생하면 **이 문서를 먼저 고치고** 코드·문서를 따라 고친다.
+2. `metrics.json` 필드명과 B절 코드 식별자가 어긋나면 이 문서가 우선이다.
+3. 갱신 시 아래 이력에 날짜와 변경 내용을 한 줄 추가한다.
+
+**갱신 이력**
+
+- 2026-09-10 — 최초 작성. 식별자 체계 4종(단계/정책/EXP/ADR) 정의, 1·2단계 산출물 필드명 등록.
+- 2026-09-13 — 결정 ID를 `ADR-NNN` → `D-NNN`으로 통일(유령 참조 8곳 해소).
+  무효화된 로드맵을 정의처에서 제거. 보정·LOAO·3분할 관련 용어를 B-1·C-1로 격리.
+  A-3(같은 사실을 두 곳에 쓰지 않는다) 신설.
+- 2026-09-14 — D-006 제한 하이퍼파라미터 격자의 `candidate_id`(`C01`~`C08`) 등록.
+- 2026-09-14 — D-006의 `p_attack`, `predicted_label`, `confidence`, `is_error` 정의 및 AURC
+  단조변환 불변 조건을 정확히 등록.
+- 2026-09-14 — D-006 AURC 계산의 `coverage`, `selective_risk`, `full_coverage_risk`,
+  `random_aurc`, `oracle_aurc` 등록.
+- 2026-09-14 — D-006 유보 budget의 `target_abstention_rate`, `actual_abstention_rate`,
+  `confidence_threshold`, `budget_shortfall` 등록.
+- 2026-09-14 — D-006 전체 test·budget 보조 지표와 표본 수 식별자를 등록하고, PR 요약을
+  `average_precision`으로 명확히 정의.
+- 2026-09-14 — D-006 성공 판정의 `relative_aurc_improvement`, `error_enrichment` 등록.
+- 2026-09-16 — EXP-008의 정규화 AURC 비교, 고정 경계 처리량 차이, 완전일치 그룹 및
+  seed 간 test 중복 진단 식별자를 등록.

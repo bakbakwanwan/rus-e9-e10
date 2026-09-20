@@ -263,16 +263,18 @@
 2. latency p50/p95와 parsing failure rate 기록.
 3. 원자료에서 pilot 결과까지 `input_index` 추적 가능.
 
-### 5-8. WP6 — Full E9 확정 스펙
+### 5-8. WP6 — Full E9 확정 스펙 — 완료
 
-pilot 통과 후에만 다음을 확정한다.
+`experiments/EXP-009-full-run.md`로 확정했다.
 
-1. 정식 `EXP-NNN` ID와 실험 질문.
-2. 실행할 abstention budget과 전체 대상 flow.
-3. 과학적 성공·실패·판정불가 기준.
-4. 비교 지표의 주·보조 구분과 결과 해석 한계.
-5. 실행 자원·시간 상한과 최종 artifact 계약.
+1. 정식 `EXP-NNN` ID와 실험 질문 — `EXP-009`, RQ는 `docs/EXP-009-DECISIONS.MD` D-EXP009-011 참조.
+2. 실행할 abstention budget과 전체 대상 flow — `group_seed42` / `target_abstention_rate=0.01` / 4,816행 전체.
+3. 과학적 성공·실패·판정불가 기준 — `experiments/EXP-009-full-run.md` 3절.
+4. 비교 지표의 주·보조 구분과 결과 해석 한계 — 같은 문서 4절.
+5. 실행 자원·시간 상한과 최종 artifact 계약 — 같은 문서 5절.
 
-### 5-9. 미결 사항 결정 순서
+Full E9 run은 실행 완료됐다 (`e9-pilot-20260919T115818Z-768f24f8`, 2026-09-19~20, 4,816/4,816, 약 9.78시간). 결과는 `docs/EXP-009-DECISIONS.MD` D-EXP009-023에 있다.
 
-1. pilot 통과 후 full E9 스펙.
+### 5-9. 미결 사항 결정 순서 — 완료
+
+WP6 확정과 full E9 run 실행이 모두 끝나 이 항목의 미결은 없다. 후속 작업(error analysis, E10 착수 여부)은 `docs/EXP-009-DECISIONS.MD` 7절에 후보로만 남아있고 아직 확정되지 않았다.

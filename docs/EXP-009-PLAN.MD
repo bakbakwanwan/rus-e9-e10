@@ -498,16 +498,19 @@ EXP-009 pilot에서 보존해야 하는 파일:
 | 1-flow smoke test 방식 | 확정: `sample_size=1` 별도 bundle/run |
 | runner `--limit` option 추가 여부 | 확정: 추가하지 않음 |
 | full run partial resume policy | 확정: in-place resume 금지, 새 `run_id`로 재실행 |
-| full run EXP/result directory | pilot 이후 결정 |
+| full run EXP/result directory | 확정: `results/EXP-009/<run_id>/`, pilot과 동일 내부 구조 (`experiments/EXP-009-full-run.md`) |
 
-## 11. Immediate Next Work
+## 11. Immediate Next Work — 완료 (2026-09-20)
 
-현재 계획상 바로 할 일은 다음 순서다.
+계획된 작업은 모두 실행됐다.
 
-1. 최소 테스트 스위트 작성
-2. `pytest -q` 통과 확인
-3. source artifact 경로 확정
-4. 100-flow export dry run
-5. bundle validation
-6. Ollama smoke test 방식 결정
-7. 100-flow pilot 실행
+1. 최소 테스트 스위트 작성 — 완료 (`pytest -q` 17 passed)
+2. `pytest -q` 통과 확인 — 완료
+3. source artifact 경로 확정 — 완료
+4. 100-flow export dry run — 완료
+5. bundle validation — 완료
+6. Ollama smoke test 방식 결정 — 완료
+7. 100-flow pilot 실행 — 완료 (신 환경: `e9-pilot-20260919T113156Z-093066da`)
+8. Full E9 run 실행 — 완료 (`e9-pilot-20260919T115818Z-768f24f8`, 4,816/4,816, `docs/EXP-009-DECISIONS.MD` D-EXP009-023)
+
+결과와 해석은 `docs/EXP-009-DECISIONS.MD` D-EXP009-023, 위치 색인은 `index.md` 13절 참조.

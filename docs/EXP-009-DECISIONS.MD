@@ -739,6 +739,54 @@ Git에는 코드, 설정, 테스트, 문서, dependency 목록, 외부 artifact 
 
 이렇게 확정하는 이유는 현재 환경에서 예상 약 6.5시간의 monolithic full run을 안정적으로 수행하기 어렵고, pilot까지 확보한 재현 가능한 코드와 실패·성공 이력을 잃지 않은 채 더 적합한 환경으로 넘기는 것이 EXP-009의 연구 무결성을 보존하기 때문이다.
 
+### D-EXP009-023 — Full E9 Run 완료와 결과
+
+새 실행 환경(`LAPTOP1324`, RTX 3050 Laptop GPU 4GB, `docs/environment-fullrun-2026-09-19.md`)에서 EXP-009 full E9 run을 실행했다. 실행 조건은 `experiments/EXP-009-full-run.md`에서 확정한 그대로다.
+
+- run_id: `e9-pilot-20260919T115818Z-768f24f8`
+- source: `EXP-007` / `group_seed42` / `target_abstention_rate=0.01`
+- 대상 행 수: 4,816 (abstained set 전체, 표본 추출 없음)
+- 실행 시각: `2026-09-19T11:59:52Z` ~ `2026-09-19T21:46:43Z` (약 9.78시간)
+- 저장 위치: `results/EXP-009/e9-pilot-20260919T115818Z-768f24f8/`
+
+**기술 성공 기준(D-EXP009-018)을 모두 충족했다.**
+
+- `run_status`: `completed`, 4,816/4,816 행 확보, 모든 `input_index`에 정확히 하나의 응답
+- schema valid rate: 99.88% (4,810/4,816)
+- timeout rate: 0.12% (6건, 전부 timeout), 그 외 generation_failure 0건
+- OOM/crash: 0건
+- latency: p50 3.84초, p95 24.81초
+
+**주 비교(`gate_forced` vs `end_to_end`) 결과**
+
+| | gate_forced | end_to_end |
+|---|---|---|
+| error_rate | 0.62% (30/4816) | 9.18% (442/4816) |
+| precision | 0.965 | 0.926 |
+| recall | 0.994 | 0.418 |
+| F1 | 0.979 | 0.576 |
+
+전이표:
+
+```text
+gate_correct_final_correct : 4350
+gate_correct_final_error   : 436
+gate_error_final_correct   : 24
+gate_error_final_error     : 6
+```
+
+**결과 해석**
+
+이 결과는 EXP-009의 연구 질문("Layer 1이 abstain한 flow에서 local LLM-only verifier가 Gate forced decision보다 end-to-end 오류를 줄일 수 있는가?")에 **아니오**로 답한다.
+
+이 조건(zero-shot, RAG 없음, `gemma:7b-instruct` Q4_0, `e9-v1` prompt)에서 LLM override는 Gate 오류 24건을 교정했지만 Gate 정답 436건을 오답으로 바꿨다. `end_to_end` error rate(9.18%)는 `gate_forced`(0.62%)보다 약 14.7배 높다. `end_to_end` recall 41.8%는 실제 공격의 58.2%를 최종적으로 놓친다는 뜻이다. 100-flow pilot에서 관찰된 위험 신호(`gate_correct_final_error : gate_error_final_correct` = 8:1)가 노이즈가 아니라 전체 모집단(4,816행)에서 재현됐으며, 오히려 더 뚜렷하다(18:1).
+
+이 결과는 성능 우위를 입증하는 결과가 아니라 **부정적(negative) baseline**이다. `AGENTS.md` 20절 원칙에 따라 있는 그대로 기록하며, 이 결과를 뒤집기 위해 prompt나 few-shot을 사후 조정하지 않는다. 조정이 필요하다면 별도 experiment version으로 관리한다. 이 수치가 향후 E10(RAG 추가) 비교의 기준선이 된다.
+
+전체 지표 정본은 `results/EXP-009/e9-pilot-20260919T115818Z-768f24f8/evaluation/metrics.json`이며, 요약은 `index.md` 13절에도 있다.
+
+이렇게 확정하는 이유는 EXP-009의 1차 목적(D-EXP009-011: 재현 가능한 E9 baseline 구축)이 pilot이 아니라 full run에서 달성됐고, 그 결과가 향후 E10 비교의 기준점이 되므로 해석을 덧붙이지 않고 사실 그대로 결정 기록에 남겨야 하기 때문이다.
+
 ## 5. EXP-009가 답하지 않는 것
 
 EXP-009는 다음을 답하지 않는다.
@@ -785,14 +833,22 @@ EXP-009 계획 확정 단계에서 다루기로 한 항목은 대부분 확정�
 8. Full run 진입 기준
 9. Partial/resume 정책
 
-남은 미결:
+10. Full run result directory convention
+    - `results/EXP-009/<run_id>/`로 확정, pilot 구조(`export/{transfer,local}`, `checks`, `returned`, `evaluation`)와 동일 (`experiments/EXP-009-full-run.md`, D-EXP009-023).
+11. Full E9 run 실행과 결과
+    - `e9-pilot-20260919T115818Z-768f24f8` 완료, evaluated. 결과는 D-EXP009-023.
 
-1. Full run result directory convention
-   - 100-flow pilot 이후 full run 진입 여부를 판단한 뒤 별도로 확정한다.
+남은 미결: 없음. EXP-009의 1차 목적(재현 가능한 E9 baseline 구축)은 D-EXP009-023로 달성됐다.
 
 ## 7. 다음 작업 순서
 
-현재 결정에 따른 다음 작업 순서는 다음이다.
+EXP-009 실행 자체는 D-EXP009-023로 완료됐다. 이후 후보 작업(우선순위 미정, 별도 확정 필요):
+
+1. full run 442건 오류(특히 `gate_correct_final_error` 436건)에 대한 error analysis — 어떤 feature 패턴/attack class에서 override가 집중되는지
+2. E10(RAG 추가) 착수 여부 결정 — `AGENTS.md` 25절 P10, 27절 "Definition of E10 Ready" 체크리스트 검토
+3. few-shot 또는 prompt 개정을 별도 experiment version으로 시도할지 결정 (현재 결과를 덮어쓰지 않음)
+
+완료된 이력(참고용):
 
 1. 최소 테스트 스위트 작성
 2. `pytest -q` 통과 확인
@@ -803,4 +859,5 @@ EXP-009 계획 확정 단계에서 다루기로 한 항목은 대부분 확정�
 7. 100-flow transfer bundle validation
 8. 100-flow pilot
 9. pilot evaluation
-10. full run 진입 여부 결정
+10. full run 진입 여부 결정 → 진입
+11. full E9 run 실행 → 완료, evaluated (D-EXP009-023)
